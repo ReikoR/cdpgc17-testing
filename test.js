@@ -5,7 +5,7 @@ const steam = require('./steam-controller');
 const controller = new steam.SteamController();
 
 const mbedPort = 8042;
-const mbedAddress = '192.168.1.137';
+const mbedAddress = '192.168.4.1';
 
 var pipeMotorSpeed = 0;
 
@@ -17,7 +17,7 @@ controller.connect();
 controller.on('data', (data) => {
     //console.log(data.joystick.y);
 
-    //pipeMotorSpeed = data.joystick.y / 10;
+    pipeMotorSpeed = data.joystick.y / 10;
 });
 
 socket.on('error', (err) => {
@@ -29,7 +29,7 @@ socket.on('message', (msg, rinfo) => {
     //console.log(`socket got: ${msg} from ${rinfo.address}:${rinfo.port}`);
     //console.log(msg);
     currentTime = Date.now();
-    console.log(currentTime - prevTime, msg.readInt32LE(0), msg.readInt16LE(4));
+    console.log(('0' + (currentTime - prevTime)).slice(-2), msg.readInt32LE(0), msg.readInt16LE(4));
     //console.log(msg.readInt32LE(6))
     //console.log(msg.readInt16LE(10))
     prevTime = currentTime;
@@ -52,8 +52,8 @@ socket.on('listening', () => {
         var message = new Buffer.from(command.buffer);
         socket.send(message, 0, message.length, mbedPort, mbedAddress);
 
-        pipeMotorSpeed = Math.sin(value) * 5000;
-        value += 0.001;
+        //pipeMotorSpeed = Math.sin(value) * 5000;
+        //value += 0.002;
     }, 10);
 });
 
