@@ -12,12 +12,55 @@ var pipeMotorSpeed = 0;
 var currentTime = Date.now();
 var prevTime = currentTime;
 
+var speedLimit = 32000;
+var defaultMaxSpeed = 4000;
+var maxSpeed = defaultMaxSpeed;
+
+var prevButtons = {};
+
 controller.connect();
 
-controller.on('data', (data) => {
-    //console.log(data.joystick.y);
+function clone(obj) {
+	var cloned = {};
+	
+	for (key in obj) {
+		cloned[key] = obj[key];
+	}
+	
+	return cloned;
+}
 
-    pipeMotorSpeed = data.joystick.y / 10;
+controller.on('data', (data) => {
+    //console.log(data.button);
+	
+	if (!prevButtons.A && data.button.A) {
+		console.log('A');
+		maxSpeed = defaultMaxSpeed;
+		console.log(maxSpeed);
+	}
+	
+	if (!prevButtons.X && data.button.X) {
+		console.log('X');
+		maxSpeed /= 2;
+		console.log(maxSpeed);
+	}
+	
+	if (!prevButtons.Y && data.button.Y) {
+		console.log('Y');
+		maxSpeed *= 2;
+		
+		if (maxSpeed > speedLimit) {
+			maxSpeed = speedLimit;
+		}
+		
+		console.log(maxSpeed);
+	}
+	
+	prevButtons = clone(data.button);
+
+    pipeMotorSpeed = data.joystick.y / 32768 * maxSpeed;
+	
+	//console.log(pipeMotorSpeed);
 });
 
 socket.on('error', (err) => {
@@ -52,9 +95,9 @@ socket.on('listening', () => {
         var message = new Buffer.from(command.buffer);
         socket.send(message, 0, message.length, mbedPort, mbedAddress);
 
-        //pipeMotorSpeed = Math.sin(value) * 5000;
-        //value += 0.002;
-    }, 10);
+        //pipeMotorSpeed = Math.sin(value) * 1000;
+        //value += 0.005;
+    }, 15);
 });
 
 socket.bind(8042);
