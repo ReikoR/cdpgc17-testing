@@ -12,7 +12,7 @@ var pipeMotorSpeed = 0;
 var currentTime = Date.now();
 var prevTime = currentTime;
 
-var speedLimit = 32000;
+var speedLimit = 64000;
 var defaultMaxSpeed = 4000;
 var maxSpeed = defaultMaxSpeed;
 
@@ -72,7 +72,7 @@ socket.on('message', (msg, rinfo) => {
     //console.log(`socket got: ${msg} from ${rinfo.address}:${rinfo.port}`);
     //console.log(msg);
     currentTime = Date.now();
-    console.log(('0' + (currentTime - prevTime)).slice(-2), msg.readInt32LE(0), msg.readInt16LE(4));
+    console.log(('0' + (currentTime - prevTime)).slice(-2), msg.readInt32LE(0), msg.readInt32LE(4));
     //console.log(msg.readInt32LE(6))
     //console.log(msg.readInt16LE(10))
     prevTime = currentTime;
@@ -87,7 +87,7 @@ socket.on('listening', () => {
     var value = 0;
 
     setInterval(function () {
-        const command = new Int16Array(2);
+        const command = new Int32Array(2);
 
         command[0] = pipeMotorSpeed;
         command[1] = boomMotorSpeed;
