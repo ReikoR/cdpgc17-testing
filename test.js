@@ -8,6 +8,7 @@ const mbedPort = 8042;
 const mbedAddress = '192.168.4.1';
 
 var pipeMotorSpeed = 0;
+var xMotorSpeed = 0;
 
 var currentTime = Date.now();
 var prevTime = currentTime;
@@ -59,8 +60,9 @@ controller.on('data', (data) => {
 	prevButtons = clone(data.button);
 
     pipeMotorSpeed = data.joystick.y / 32768 * maxSpeed;
-	
-	//console.log(pipeMotorSpeed);
+    xMotorSpeed = data.joystick.x / 32768 * maxSpeed;
+
+	//console.log(data.joystick);
 });
 
 socket.on('error', (err) => {
@@ -72,7 +74,8 @@ socket.on('message', (msg, rinfo) => {
     //console.log(`socket got: ${msg} from ${rinfo.address}:${rinfo.port}`);
     //console.log(msg);
     currentTime = Date.now();
-    console.log(('0' + (currentTime - prevTime)).slice(-2), msg.readInt32LE(0), msg.readInt32LE(4));
+    console.log(('0' + (currentTime - prevTime)).slice(-2),
+		msg.readInt32LE(0), msg.readInt32LE(4), msg.readInt32LE(8), msg.readInt32LE(12));
     //console.log(msg.readInt32LE(6))
     //console.log(msg.readInt16LE(10))
     prevTime = currentTime;
@@ -82,15 +85,13 @@ socket.on('listening', () => {
     const address = socket.address();
     console.log(`socket listening ${address.address}:${address.port}`);
 
-    let boomMotorSpeed = 0;
-
     var value = 0;
 
     setInterval(function () {
         const command = new Int32Array(2);
 
         command[0] = pipeMotorSpeed;
-        command[1] = boomMotorSpeed;
+        command[1] = xMotorSpeed;
 
         var message = new Buffer.from(command.buffer);
         socket.send(message, 0, message.length, mbedPort, mbedAddress);
